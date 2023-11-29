@@ -68,19 +68,26 @@ Installation
 
     cd {{ cookiecutter.__project_name_slug }}
 
-3. Install ``toml`` and ``packaging`` on your system environment:
+
+Start the solution with a local installation
+============================================
+
+To start the solution using a desktop orchestrator run the following commands in the root of the project:
+
+
+1. Install ``toml`` and ``packaging`` on your system environment:
 
    .. code:: bash
 
      pip install toml packaging
 
-4. Install the production dependencies:
+2. Install the production and desktop dependencies:
 
   .. code:: bash
 
-    python setup_environment.py -d run
+    python setup_environment.py -d run desktop
 
-5. Activate the virtual environment:
+3. Activate the virtual environment:
 
   * For Windows CMD:
 
@@ -94,17 +101,32 @@ Installation
 
       .venv\Scripts\Activate.ps1
 
-From now on, all the commands must be executed within the virtual environment.
-
-
-Start the solution
-==================
-
-To start the solution run the following command anywhere in the project:
+4. Launch the solution:
 
   .. code:: bash
 
     saf run
+
+
+Start the solution using Docker
+===============================
+
+To start the solution using a docker run the following commands in the root of the project:
+
+
+1. Build docker images:
+
+  .. code:: bash
+
+    docker build --build-arg SOLUTIONS_PRIVATE_PYPI_PAT=$SOLUTIONS_PRIVATE_PYPI_PAT --target solution_api -t {{cookiecutter.__pkg_name}}-api:{{cookiecutter.__version}} .
+{% if cookiecutter.with_dash_ui == "yes" %}
+    docker build --build-arg SOLUTIONS_PRIVATE_PYPI_PAT=$SOLUTIONS_PRIVATE_PYPI_PAT --target solution_ui -t {{cookiecutter.__pkg_name}}-ui:{{cookiecutter.__version}} .
+{% endif %}
+2. Launch the solution:
+
+  .. code:: bash
+
+    docker compose up
 
 
 Documentation

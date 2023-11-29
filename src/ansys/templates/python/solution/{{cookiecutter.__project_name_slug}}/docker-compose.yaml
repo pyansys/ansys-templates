@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+
+  postgresql:
+    image: postgres:latest
+    container_name: {{cookiecutter.__pkg_name}}-database-container
+    networks:
+      - {{cookiecutter.__pkg_name}}-network
+    environment:
+      - POSTGRES_USER=glow
+      - POSTGRES_PASSWORD=glow
+    # don't expose ports, consumed internally by another container
+    volumes:
+      - ./container_data/db:/var/lib/postgresql/data
+
+  glow-api:
+    image: {{cookiecutter.__pkg_name}}-api:{{cookiecutter.__version}}
+    container_name: {{cookiecutter.__pkg_name}}-api-container
+    networks:
+      - {{cookiecutter.__pkg_name}}-network
+    environment:
+      # All are optional
+      - GLOW_PROJECT_FILES_DIRECTORY=/projects
+      - GLOW_METHOD_EXECUTION_DIRECTORY=/transactions
+      - GLOW_API_HOST=0.0.0.0
+      - GLOW_API_PORT=50000
+      - GLOW_DEBUG=1
+      - GLOW_DATABASE_TYPE=postgresql
+      - GLOW_DATABASE_LOCATION=postgresql://glow:glow@{{cookiecutter.__pkg_name}}-database-container:5432
+    ports:
+      - 50000:50000
+    volumes:
+      # All are optional
+      - ./container_data/projects:/projects  # Should match GLOW_PROJECT_FILES_DIRECTORY
+      - ./container_data/transactions:/transactions  # Should match GLOW_METHOD_EXECUTION_DIRECTORY
+{% if cookiecutter.with_dash_ui == "yes" %}
+  glow-ui:
+    image: {{cookiecutter.__pkg_name}}-ui:{{cookiecutter.__version}}
+    container_name: {{cookiecutter.__pkg_name}}-ui-container
+    networks:
+      - {{cookiecutter.__pkg_name}}-network
+    environment:
+      # All are optional
+      - GLOW_DEBUG=1
+      - GLOW_UI_HOST=0.0.0.0
+      - GLOW_UI_PORT=50001
+      - GLOW_API_URL=http://{{cookiecutter.__pkg_name}}-api-container:50000
+    ports:
+      - 50001:50001
+{% endif %}
+
+networks:
+  {{cookiecutter.__pkg_name}}-network:
+    driver: bridge
